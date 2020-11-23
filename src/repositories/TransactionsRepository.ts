@@ -1,4 +1,6 @@
-import { EntityRepository, Repository } from 'typeorm';
+import { EntityRepository, Repository, ValueTransformer } from 'typeorm';
+
+var types = require('pg').types
 
 import Transaction from '../models/Transaction';
 
@@ -8,10 +10,51 @@ interface Balance {
   total: number;
 }
 
+interface Request{
+  id: string;
+  title: string;
+  value: string;
+  category_id: null;
+  created_at: Date;
+  updated_at: Date;
+}
+
 @EntityRepository(Transaction)
 class TransactionsRepository extends Repository<Transaction> {
   public async getBalance(): Promise<Balance> {
-    // TODO
+    const transactions = await this.find();
+
+    console.log()
+
+    const { income, outcome, total } = transactions.reduce((accumulator, transacition) => {
+
+      switch (transacition.type) {
+        case 'income':
+          const value = transacition.value;
+          
+          accumulator.income += transacition.value;
+
+          break;
+        case 'outcome':
+          accumulator.outcome += transacition.value;
+          console.log(typeof transacition.value,'outcome');
+          break;
+        default:
+          break;
+      }
+      
+
+      accumulator.total = accumulator.income - accumulator.outcome;
+      
+      return accumulator;
+    
+    }, {
+      income: 0,
+      outcome: 0,
+      total: 0
+    });
+
+    return {income, outcome, total}
   }
 }
 
