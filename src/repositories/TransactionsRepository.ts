@@ -37,7 +37,6 @@ class TransactionsRepository extends Repository<Transaction> {
           break;
         case 'outcome':
           accumulator.outcome += transacition.value;
-          console.log(typeof transacition.value,'outcome');
           break;
         default:
           break;
